@@ -8,16 +8,12 @@ object SQLContextSingleton {
   @transient
   @volatile private var instance: SQLContext = _
 
-  def getInstance(sparkContext: SparkContext): SQLContext = {
+  def getInstance(spark: SparkSession): SQLContext = {
     if (instance == null) {
       synchronized {
         if (instance == null) {
-          //TODO             .master("local[*]")
-//          val spark: SparkSession = SparkSession.builder
-//            .appName("Spark Application")
-//            .getOrCreate
-//          instance = spark.sqlContext
-          instance = SQLContext.getOrCreate(sparkContext)
+          instance = spark.sqlContext
+//          instance = SQLContext.getOrCreate(sparkContext)
         }
       }
     }

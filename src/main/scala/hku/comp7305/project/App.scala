@@ -8,7 +8,7 @@ import org.apache.spark.sql.SparkSession
 
 /**
  * java -cp target/TwitterSentimentAnalysis-1.0.jar hku.comp7305.project.App
- *
+ * java -cp target/TwitterSentimentAnalysis-1.0.jar hku.comp7305.project.NaiveBayesModelCreator
  */
 object App {
     def main(args: Array[String]): Unit = {
@@ -23,6 +23,6 @@ object App {
                         .appName("Simple Application")
                         .master("local")
                         .getOrCreate()
-        NaiveBayesModel.loadSentiment140File(spark, PropertiesLoader.sentiment140TestingFilePath)
+        NaiveBayesModelCreator.loadSentiment140File(spark, PropertiesLoader.sentiment140TestingFilePath)
     }
 }
