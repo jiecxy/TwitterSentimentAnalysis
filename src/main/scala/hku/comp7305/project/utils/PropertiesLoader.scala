@@ -26,9 +26,10 @@ object PropertiesLoader {
 //
 //  val microBatchTimeInSeconds = conf.getInt("STREAMING_MICRO_BATCH_TIME_IN_SECONDS")
 //  val totalRunTimeInMinutes = conf.getInt("TOTAL_RUN_TIME_IN_MINUTES")
-  private val props = new Properties();
+  private val props = new Properties()
 
-  props.load(new FileInputStream("application.conf"));
+  props.load(new FileInputStream("application.conf"))
   val sentiment140TrainingFilePath = props.getProperty("SENTIMENT140_TRAIN_DATA_ABSOLUTE_PATH")
   val sentiment140TestingFilePath = props.getProperty("SENTIMENT140_TEST_DATA_ABSOLUTE_PATH")
+  val naiveBayesModelPath = props.getProperty("NAIVEBAYES_MODEL_ABSOLUTE_PATH")
 }

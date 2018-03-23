@@ -13,11 +13,11 @@ object SQLContextSingleton {
       synchronized {
         if (instance == null) {
           //TODO             .master("local[*]")
-          val spark: SparkSession = SparkSession.builder
-            .appName("Spark Application")
-            .getOrCreate
-//          instance = SQLContext.getOrCreate(sparkContext)
-          instance = spark.sqlContext
+//          val spark: SparkSession = SparkSession.builder
+//            .appName("Spark Application")
+//            .getOrCreate
+//          instance = spark.sqlContext
+          instance = SQLContext.getOrCreate(sparkContext)
         }
       }
     }
