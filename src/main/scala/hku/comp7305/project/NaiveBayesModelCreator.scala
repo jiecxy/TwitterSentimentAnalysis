@@ -3,6 +3,7 @@ package hku.comp7305.project
 import java.io.FileInputStream
 
 import hku.comp7305.project.utils.{PropertiesLoader, SQLContextSingleton}
+import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.mllib.classification.{NaiveBayes, NaiveBayesModel}
 import org.apache.spark.mllib.feature.HashingTF
@@ -22,7 +23,7 @@ object NaiveBayesModelCreator {
       .master("local")
       .getOrCreate()
     val sc = spark.sparkContext
-    val stopWordsList = sc.broadcast(loadStopWords(PropertiesLoader.nltkStopWords))
+    val stopWordsList = sc.broadcast(loadStopWords(spark.sparkContext, PropertiesLoader.nltkStopWords))
     createAndSaveModel(spark, stopWordsList)
     validateAccuracyOfModel(spark, stopWordsList)
   }
@@ -103,8 +104,9 @@ object NaiveBayesModelCreator {
     hashingTF.transform(tweetText)
   }
 
-  def loadStopWords(stopWordsFileName: String): List[String] = {
+  def loadStopWords(sc: SparkContext, stopWordsFileName: String): List[String] = {
 //    Source.fromInputStream(getClass.getResourceAsStream(stopWordsFileName)).getLines().toList
-    Source.fromInputStream(new FileInputStream(stopWordsFileName)).getLines().toList
+//    Source.fromInputStream(new FileInputStream(stopWordsFileName)).getLines().toList
+    sc.textFile(stopWordsFileName).collect().toList
   }
 }
