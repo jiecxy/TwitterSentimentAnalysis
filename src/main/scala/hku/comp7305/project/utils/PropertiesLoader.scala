@@ -29,8 +29,8 @@ object PropertiesLoader {
   private val props = new Properties()
   props.load(new FileInputStream("application.conf"))
 //  val masterURL =
-  val sentiment140TrainingFilePath = props.getProperty("SENTIMENT140_TRAIN_DATA_ABSOLUTE_PATH")
-  val sentiment140TestingFilePath = props.getProperty("SENTIMENT140_TEST_DATA_ABSOLUTE_PATH")
-  val naiveBayesModelPath = props.getProperty("NAIVEBAYES_MODEL_ABSOLUTE_PATH")
-  val nltkStopWords = props.getProperty("NLTK_STOPWORDS_FILE_NAME")
+  val SENTIMENT140_TRAIN_DATA_PATH = props.getProperty("SENTIMENT140_TRAIN_DATA_PATH")
+  val SENTIMENT140_TEST_DATA_PATH = props.getProperty("SENTIMENT140_TEST_DATA_PATH")
+  val MODEL_PATH = props.getProperty("MODEL_PATH")
+  val NLTK_STOPWORDS_PATH = props.getProperty("NLTK_STOPWORDS_PATH")
 }

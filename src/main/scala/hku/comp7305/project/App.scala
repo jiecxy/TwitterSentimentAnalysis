@@ -1,10 +1,8 @@
 package hku.comp7305.project
 
-import hku.comp7305.project.NaiveBayesModelCreator.{createAndSaveModel, loadStopWords, validateAccuracyOfModel}
-import hku.comp7305.project.utils.PropertiesLoader
+import hku.comp7305.project.SVMModelCreator.{createAndSaveModel, loadStopWords, validateAccuracyOfModel}
+import hku.comp7305.project.utils.{LogUtil, PropertiesLoader}
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.sql.SparkSession
 
 
@@ -14,48 +12,53 @@ import org.apache.spark.sql.SparkSession
  */
 object App {
   def main(args: Array[String]): Unit = {
-  //      file:///Users/jiecxy/Desktop/Project/TwitterSentimentAnalysis/spark-warehouse/
-  //        val conf = new SparkConf()
-  //          .setAppName(this.getClass.getSimpleName)
-  //          .setMaster("spark://localhost")
-  //          .set("spark.serializer", classOf[KryoSerializer].getCanonicalName)
-  //        val sc = SparkContext.getOrCreate(conf)
-    val log = Logger.getLogger(getClass)
-    if (args.length != 1) {
-//      println("Need indicate 'train' or 'show' as argument!")
-      log.error("Need indicate 'train' or 'show' as argument!")
+
+    if (args.length < 1) {
+      LogUtil.error("Need indicate 'train' or 'show' as argument!")
       return
     }
 
     var trainMode = true
+    var iterations = 0
     if (args(0).toString.trim.equals("train")) {
       trainMode = true
+      if (args.length != 2) {
+        LogUtil.error("SVM need iteration number!")
+        return
+      } else {
+        try {
+          iterations = args(1).toString.toInt
+        } catch {
+          case e:Exception => println(e)
+            LogUtil.error("Invalid iteration number!")
+            return
+        }
+      }
     }  else if (args(0).toString.trim.equals("show")) {
-      log.warn("Not implemented yet!")
+      LogUtil.warn("Not implemented yet!")
       trainMode = false
       return
     } else {
-      log.error("Only 'train' or 'show' are valid arguments!")
+      LogUtil.error("Only 'train' or 'show' are valid arguments!")
       return
     }
 
     val spark = SparkSession.builder
-                    .appName("Twitter Movie Reviews Sentiment Analysis v0.1")
+                    .appName("Twitter Movie Reviews Sentiment Analysis v0.2")
                     .getOrCreate()
+    val sc = spark.sparkContext
+//    println("PropertiesLoader.SPARK_LOG_LEVEL: " + PropertiesLoader.SPARK_LOG_LEVEL)
+//    sc.setLogLevel(PropertiesLoader.SPARK_LOG_LEVEL)
 
-
-    // .master("local")
     if (trainMode) {
-      log.info("Starting training model...")
-      val sc = spark.sparkContext
-      val stopWordsList = sc.broadcast(loadStopWords(spark.sparkContext, PropertiesLoader.nltkStopWords))
-      createAndSaveModel(spark, stopWordsList)
-      log.info("Validating  model...")
-      validateAccuracyOfModel(spark, stopWordsList)
+      LogUtil.info("Starting training model...")
+      val stopWordsList = sc.broadcast(loadStopWords(sc, PropertiesLoader.NLTK_STOPWORDS_PATH))
+      createAndSaveModel(sc, stopWordsList, iterations)
+      LogUtil.info("Validating  model...")
+      validateAccuracyOfModel(sc, stopWordsList)
     } else {
-      log.warn("Not implemented yet!")
+      LogUtil.warn("Not implemented yet!")
       //      println("Not implemented yet!")
-
     }
   }
 }

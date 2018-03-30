@@ -1,19 +1,17 @@
 package hku.comp7305.project
 
-import java.io.IOException
-
 import hku.comp7305.project.utils.{LogUtil, PropertiesLoader, SQLContextSingleton}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.ml.classification.MultilayerPerceptronClassificationModel
-import org.apache.spark.mllib.classification.{NaiveBayes, NaiveBayesModel, SVMModel, SVMWithSGD}
+import org.apache.spark.mllib.classification.{SVMModel, SVMWithSGD}
 import org.apache.spark.mllib.feature.HashingTF
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.sql.{DataFrame, Row}
 
-object NaiveBayesModelCreator {
+object SVMModelCreator {
 
   def main(args: Array[String]): Unit = {
 //    val spark = SparkSession.builder
@@ -37,16 +35,15 @@ object NaiveBayesModelCreator {
         LabeledPoint(polarity, textToFeatureVector(tweetInWords))
     }
     labeledRDD.cache()
-    LogUtil.info("Starting training Naive Bayes model...")
-    val model: NaiveBayesModel = NaiveBayes.train(labeledRDD, lambda = 0.1, modelType = "multinomial")
-//    val model = SVMWithSGD.train(labeledRDD, iterations)
+    LogUtil.info("Starting training SVM model...")
+    val model = SVMWithSGD.train(labeledRDD, iterations)
     MultilayerPerceptronClassificationModel
     //TODO
-    LogUtil.info("Training Naive Bayes model finished!")
-    LogUtil.info("Saving Naive Bayes model...")
+    LogUtil.info("Training SVM model finished!")
+    LogUtil.info("Saving SVM model...")
     checkModelSavePath(sc, PropertiesLoader.MODEL_PATH)
     model.save(sc, PropertiesLoader.MODEL_PATH)
-    LogUtil.info("Saving Naive Bayes model finished!")
+    LogUtil.info("Saving SVM model finished!")
   }
 
   def checkModelSavePath(sc: SparkContext, pathName: String): Unit = {
@@ -63,8 +60,8 @@ object NaiveBayesModelCreator {
   }
 
   def validateAccuracyOfModel(sc: SparkContext, stopWordsList: Broadcast[List[String]]): Unit = {
-    val model: NaiveBayesModel = NaiveBayesModel.load(sc, PropertiesLoader.MODEL_PATH)
-//    val model = SVMModel.load(sc, PropertiesLoader.MODEL_PATH)
+//    val model: NaiveBayesModel = NaiveBayesModel.load(sc, PropertiesLoader.NAIVEBAYES_MODEL_PATH)
+    val model = SVMModel.load(sc, PropertiesLoader.MODEL_PATH)
     //TODO
     val tweetsDF: DataFrame = loadSentiment140File(sc, PropertiesLoader.SENTIMENT140_TEST_DATA_PATH)
     val actualVsPredictionRDD = tweetsDF.select("polarity", "text").rdd.map {
@@ -75,11 +72,12 @@ object NaiveBayesModelCreator {
           model.predict(textToFeatureVector(tweetInWords)),
           tweetText)
     }
-    val accuracy = 100.0 * actualVsPredictionRDD.filter(x => x._1 == x._2).count() / tweetsDF.count()
-    /*actualVsPredictionRDD.cache()
+    actualVsPredictionRDD.cache()
+//    val accuracy = 100.0 * actualVsPredictionRDD.filter(x => x._1 == x._2).count() / tweetsDF.count()
+
     val predictedCorrect = actualVsPredictionRDD.filter(x => x._1 == x._2).count()
     val predictedInCorrect = actualVsPredictionRDD.filter(x => x._1 != x._2).count()
-    val accuracy = 100.0 * predictedCorrect.toDouble / (predictedCorrect + predictedInCorrect).toDouble*/
+    val accuracy = 100.0 * predictedCorrect.toDouble / (predictedCorrect + predictedInCorrect).toDouble
     println(f"""\n\t<==******** Prediction accuracy compared to actual: $accuracy%.2f%% ********==>\n""")
 //    saveAccuracy(sc, actualVsPredictionRDD)
   }
@@ -92,8 +90,10 @@ object NaiveBayesModelCreator {
       .option("inferSchema", "true")
       .load(sentiment140FilePath)
       .toDF("polarity", "id", "date", "query", "user", "text")
-    // Drop the columns we are not interested in.
-    tweetsDF.drop("id").drop("date").drop("query").drop("user")
+      .drop("id").drop("date").drop("query").drop("user")
+      .filter(row => (row.getInt(0) != 2))
+      .na.replace("polarity", Map(4->1))
+    tweetsDF
   }
 
   def getCleanedTweetText(tweetText: String, stopWordsList: List[String]): Seq[String] = {
