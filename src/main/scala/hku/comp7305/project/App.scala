@@ -2,9 +2,7 @@ package hku.comp7305.project
 
 import hku.comp7305.project.SVMModelCreator.{createAndSaveModel, loadStopWords, validateAccuracyOfModel}
 import hku.comp7305.project.utils.{LogUtil, PropertiesLoader}
-import org.apache.log4j.Logger
 import org.apache.spark.sql.SparkSession
-
 
 /**
  * java -cp target/TwitterSentimentAnalysis-1.0.jar hku.comp7305.project.App

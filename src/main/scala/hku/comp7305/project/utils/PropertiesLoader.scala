@@ -33,4 +33,5 @@ object PropertiesLoader {
   val SENTIMENT140_TEST_DATA_PATH = props.getProperty("SENTIMENT140_TEST_DATA_PATH")
   val MODEL_PATH = props.getProperty("MODEL_PATH")
   val NLTK_STOPWORDS_PATH = props.getProperty("NLTK_STOPWORDS_PATH")
+  val TEST_DATA_PATH = props.getProperty("TEST_DATA_PATH")
 }

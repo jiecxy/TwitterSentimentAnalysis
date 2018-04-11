@@ -4,7 +4,6 @@ import hku.comp7305.project.utils.{LogUtil, PropertiesLoader, SQLContextSingleto
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.ml.classification.MultilayerPerceptronClassificationModel
 import org.apache.spark.mllib.classification.{SVMModel, SVMWithSGD}
 import org.apache.spark.mllib.feature.HashingTF
 import org.apache.spark.mllib.linalg.Vector
@@ -14,14 +13,14 @@ import org.apache.spark.sql.{DataFrame, Row}
 object SVMModelCreator {
 
   def main(args: Array[String]): Unit = {
-//    val spark = SparkSession.builder
-//      .appName("Simple Application")
-//      .master("local")
-//      .getOrCreate()
-//    val sc = spark.sparkContext
-//    val stopWordsList = sc.broadcast(loadStopWords(spark.sparkContext, PropertiesLoader.NLTK_STOPWORDS_PATH))
-//    createAndSaveModel(sc, stopWordsList)
-//    validateAccuracyOfModel(sc, stopWordsList)
+    //    val spark = SparkSession.builder
+    //      .appName("Simple Application")
+    //      .master("local")
+    //      .getOrCreate()
+    //    val sc = spark.sparkContext
+    //    val stopWordsList = sc.broadcast(loadStopWords(spark.sparkContext, PropertiesLoader.NLTK_STOPWORDS_PATH))
+    //    createAndSaveModel(sc, stopWordsList)
+    //    validateAccuracyOfModel(sc, stopWordsList)
   }
 
   val hashingTF = new HashingTF()
@@ -37,7 +36,6 @@ object SVMModelCreator {
     labeledRDD.cache()
     LogUtil.info("Starting training SVM model...")
     val model = SVMWithSGD.train(labeledRDD, iterations)
-    MultilayerPerceptronClassificationModel
     //TODO
     LogUtil.info("Training SVM model finished!")
     LogUtil.info("Saving SVM model...")
@@ -51,7 +49,7 @@ object SVMModelCreator {
     val hdfs = org.apache.hadoop.fs.FileSystem.get(hadoopConf)
     val path = new Path(pathName)
     if (hdfs.isDirectory(path)) {
-        hdfs.delete(path, true)
+      hdfs.delete(path, true)
     }
   }
 
@@ -59,10 +57,18 @@ object SVMModelCreator {
     tweet.replaceAll("\n", "")
   }
 
+  def loadModel(sc: SparkContext): SVMModel = {
+    SVMModel.load(sc, PropertiesLoader.MODEL_PATH)
+  }
+
+  def predict(model: SVMModel, raw_text:String, stopWordsList: Broadcast[List[String]]): Double = {
+    val tweetInWords: Seq[String] = getCleanedTweetText(replaceNewLines(raw_text), stopWordsList.value)
+    model.predict(textToFeatureVector(tweetInWords))
+  }
+
   def validateAccuracyOfModel(sc: SparkContext, stopWordsList: Broadcast[List[String]]): Unit = {
-//    val model: NaiveBayesModel = NaiveBayesModel.load(sc, PropertiesLoader.NAIVEBAYES_MODEL_PATH)
+    //    val model: NaiveBayesModel = NaiveBayesModel.load(sc, PropertiesLoader.NAIVEBAYES_MODEL_PATH)
     val model = SVMModel.load(sc, PropertiesLoader.MODEL_PATH)
-    //TODO
     val tweetsDF: DataFrame = loadSentiment140File(sc, PropertiesLoader.SENTIMENT140_TEST_DATA_PATH)
     val actualVsPredictionRDD = tweetsDF.select("polarity", "text").rdd.map {
       case Row(polarity: Int, tweet: String) =>
@@ -73,13 +79,13 @@ object SVMModelCreator {
           tweetText)
     }
     actualVsPredictionRDD.cache()
-//    val accuracy = 100.0 * actualVsPredictionRDD.filter(x => x._1 == x._2).count() / tweetsDF.count()
+    //    val accuracy = 100.0 * actualVsPredictionRDD.filter(x => x._1 == x._2).count() / tweetsDF.count()
 
     val predictedCorrect = actualVsPredictionRDD.filter(x => x._1 == x._2).count()
     val predictedInCorrect = actualVsPredictionRDD.filter(x => x._1 != x._2).count()
     val accuracy = 100.0 * predictedCorrect.toDouble / (predictedCorrect + predictedInCorrect).toDouble
     println(f"""\n\t<==******** Prediction accuracy compared to actual: $accuracy%.2f%% ********==>\n""")
-//    saveAccuracy(sc, actualVsPredictionRDD)
+    //    saveAccuracy(sc, actualVsPredictionRDD)
   }
 
   def loadSentiment140File(sc: SparkContext, sentiment140FilePath: String): DataFrame = {
@@ -119,8 +125,8 @@ object SVMModelCreator {
   }
 
   def loadStopWords(sc: SparkContext, stopWordsFileName: String): List[String] = {
-//    Source.fromInputStream(getClass.getResourceAsStream(stopWordsFileName)).getLines().toList
-//    Source.fromInputStream(new FileInputStream(stopWordsFileName)).getLines().toList
+    //    Source.fromInputStream(getClass.getResourceAsStream(stopWordsFileName)).getLines().toList
+    //    Source.fromInputStream(new FileInputStream(stopWordsFileName)).getLines().toList
     sc.textFile(stopWordsFileName).collect().toList
   }
 }
