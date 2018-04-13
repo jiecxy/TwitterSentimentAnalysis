@@ -1,19 +1,28 @@
 package hku.comp7305.project
 
-import hku.comp7305.project.utils.PropertiesLoader
+import hku.comp7305.project.SVMModelCreator.loadStopWords
+import hku.comp7305.project.utils.{Constants, LogUtil, PropertiesLoader}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
+import org.elasticsearch.spark._
+import org.elasticsearch.spark.rdd.EsSpark
 
 object ProcessData {
   def main(args: Array[String]): Unit = {
-
+    val spark = SparkSession.builder
+      .appName("Twitter Movie Reviews Sentiment Analysis v0.3 (Process Data)")
+      .getOrCreate()
+    val sc = spark.sparkContext
+    LogUtil.info("Starting processing...")
+    val stopWordsList = sc.broadcast(loadStopWords(sc, PropertiesLoader.NLTK_STOPWORDS_PATH))
+    processBySVM(sc, stopWordsList)
+    LogUtil.info("Finished processing...")
   }
 
-  def processBySVM(sc: SparkContext) = {
-//      process(sc, PropertiesLoader.TEST_DATA_PATH)
-
+  def processBySVM(sc: SparkContext, stopWordsList: Broadcast[List[String]]) = {
+      process(sc, PropertiesLoader.TEST_DATA_PATH, stopWordsList)
   }
 
   def process(sc: SparkContext, pathName: String, stopWordsList: Broadcast[List[String]]) = {
@@ -39,6 +48,7 @@ object ProcessData {
     //    )
     //
     //    case class Tweet(text:String)
+    //
     //    implicit val formats = Serialization.formats(NoTypeHints)
     //    val str = """{"nbr_retweet": 0,"nbr_favorite": 0,"user_id": "3247178202","url": "/MoAMPmusic/status/980664030061834240","text": "Everyone Wants to be a Lion. \nChances are most don't get the opportunity to be. \n#zoology","usernameTweet": "MoAMPmusic","datetime": "2018-04-02 12:31:39","is_retweet": false,"ID": "980664030061834240","nbr_reply": 0,"is_reply": false},"""
     //    val tweetObj = parse(str).extract[Tweet]
@@ -57,8 +67,7 @@ object ProcessData {
     "nbr_reply": 0,
     "is_reply": false},
      */
-
-    import hku.comp7305.project.SVMModelCreator
+    case class TweetES(city_name:String, genre:String, movie_name:String, sentiment:String, location:String, time:String)
     val model = SVMModelCreator.loadModel(sc)
 
     val cityPath = hdfs.listStatus(path)
@@ -90,18 +99,23 @@ object ProcessData {
               t => {
                 implicit val formats = DefaultFormats
                 val text:String = (parse(t) \ "text").extract[String]
+                val time:String = (parse(t) \ "datetime").extract[String]
 
                 // ===
-                val sentiment = SVMModelCreator.predict(model, text, stopWordsList)
+                val sentimentFLoat = SVMModelCreator.predict(model, text, stopWordsList)
+                var sentiment = "pos"
+                if (sentimentFLoat == 0.0) {
+                  sentiment = "neg"
+                }
                 // ===
-
-                (cityName, genreName, movieName, text, sentiment)
-                // TODO
+                // case class TweetES(city_name:String, genre:String, movie_name:String, sentiment:String, location:String, time:String)
+                TweetES(cityName, genreName, movieName, sentiment, Constants.geoMap(cityName.trim), time)
               }
             )
           }
         }
 //        println(moviesTweets.collect().toList.toString())
+        EsSpark.saveToEs(moviesTweets, "tweets/tweet")
       }
     }
   }
