@@ -97,19 +97,24 @@ object ProcessData {
             val movieName = splits(0).substring(0, splits(0).length - "near".length).replaceAll("_", " ").trim.replaceAll("#", " ").trim
             tweets.split("\n").map(
               t => {
-                implicit val formats = DefaultFormats
-                val text:String = (parse(t) \ "text").extract[String]
-                val time:String = (parse(t) \ "datetime").extract[String]
+                try {
+                  implicit val formats = DefaultFormats
+                  val text: String = (parse(t) \ "text").extract[String]
+                  val time: String = (parse(t) \ "datetime").extract[String]
 
-                // ===
-                val sentimentFLoat = SVMModelCreator.predict(model, text, stopWordsList)
-                var sentiment = "pos"
-                if (sentimentFLoat == 0.0) {
-                  sentiment = "neg"
+                  // ===
+                  val sentimentFLoat = SVMModelCreator.predict(model, text, stopWordsList)
+                  var sentiment = "pos"
+                  if (sentimentFLoat == 0.0) {
+                    sentiment = "neg"
+                  }
+                  // ===
+                  // case class TweetES(city_name:String, genre:String, movie_name:String, sentiment:String, location:String, time:String)
+                  TweetES(cityName, genreName, movieName, sentiment, Constants.geoMap(cityName.trim), time)
+                } catch {
+                  case e:Exception =>
+                    LogUtil.warn("Exception when convert raw text: " + t)
                 }
-                // ===
-                // case class TweetES(city_name:String, genre:String, movie_name:String, sentiment:String, location:String, time:String)
-                TweetES(cityName, genreName, movieName, sentiment, Constants.geoMap(cityName.trim), time)
               }
             )
           }
