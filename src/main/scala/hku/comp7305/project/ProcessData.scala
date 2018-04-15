@@ -72,15 +72,21 @@ object ProcessData {
 
     val cityPath = hdfs.listStatus(path)
     val cities = FileUtil.stat2Paths(cityPath)
+    var cityCount = 0
     for (city <- cities) {
-      println("city: " + city.getName)
+//      println("city: " + city.getName)
+      cityCount += 1
       val cityName = city.getName
       val genrePath = hdfs.listStatus(city)
       val genres = FileUtil.stat2Paths(genrePath)
+
+      var genreCount = 0
       for (genre <- genres) {
-        println("genre: " + genre.getName)
+        genreCount += 1
+//        println("genre: " + genre.getName)
+        LogUtil.info("\n\n\t[=============> " + city.getName + "(" + cityCount + "/" + cities.length + ")" + " - " + genre.getName +  "(" + genreCount + "/" + genres.length + ") <==============]\n")
         val genreName = genre.getName
-        val movies = sc.wholeTextFiles(genre.toString)
+        val movies = sc.wholeTextFiles(genre.toString, 8) //.coalesce(20)
         val cleanedMovies = movies.filter(
           x => {
             val pathSplits = x._1.split("/")
@@ -120,6 +126,10 @@ object ProcessData {
           }
         }
 //        println(moviesTweets.collect().toList.toString())
+        val hdfsSavePath = PropertiesLoader.PROCESSED_TWEETS_PATH + "/" + cityName.replaceAll(" ", "_") + "-" + genre.getName.replaceAll(" ", "_") + ".data"
+        SVMModelCreator.checkModelSavePath(sc, hdfsSavePath)
+        LogUtil.info("\n\n\t ==>  Save data to path: " + hdfsSavePath + "\n")
+        moviesTweets.saveAsTextFile(hdfsSavePath)
         EsSpark.saveToEs(moviesTweets, "tweets/tweet")
       }
     }

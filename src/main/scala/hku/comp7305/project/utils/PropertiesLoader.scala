@@ -5,33 +5,21 @@ import java.util.Properties
 
 
 object PropertiesLoader {
-//  private val conf: Config = ConfigFactory.load("application.conf")
-//
-//  val sentiment140TrainingFilePath = conf.getString("SENTIMENT140_TRAIN_DATA_ABSOLUTE_PATH")
-//  val sentiment140TestingFilePath = conf.getString("SENTIMENT140_TEST_DATA_ABSOLUTE_PATH")
-//  val nltkStopWords = conf.getString("NLTK_STOPWORDS_FILE_NAME ")
-//
-//  val naiveBayesModelPath = conf.getString("NAIVEBAYES_MODEL_ABSOLUTE_PATH")
-//  val modelAccuracyPath = conf.getString("NAIVEBAYES_MODEL_ACCURACY_ABSOLUTE_PATH ")
-//
-//  val tweetsRawPath = conf.getString("TWEETS_RAW_ABSOLUTE_PATH")
-//  val saveRawTweets = conf.getBoolean("SAVE_RAW_TWEETS")
-//
-//  val tweetsClassifiedPath = conf.getString("TWEETS_CLASSIFIED_ABSOLUTE_PATH")
-//
-//  val consumerKey = conf.getString("CONSUMER_KEY")
-//  val consumerSecret = conf.getString("CONSUMER_SECRET")
-//  val accessToken = conf.getString("ACCESS_TOKEN_KEY")
-//  val accessTokenSecret = conf.getString("ACCESS_TOKEN_SECRET")
-//
-//  val microBatchTimeInSeconds = conf.getInt("STREAMING_MICRO_BATCH_TIME_IN_SECONDS")
-//  val totalRunTimeInMinutes = conf.getInt("TOTAL_RUN_TIME_IN_MINUTES")
+
+  val DEFAULT_SENTIMENT140_TRAIN_DATA_PATH = "hdfs:///tsa/trainingandtestdata/training.1600000.processed.noemoticon.csv"
+  val DEFAULT_SENTIMENT140_TEST_DATA_PATH = "hdfs:///tsa/trainingandtestdata/testdata.manual.2009.06.14.csv"
+  val DEFAULT_MODEL_PATH = "hdfs:///tsa/model"
+  val DEFAULT_NLTK_STOPWORDS_PATH = "hdfs:///tsa/trainingandtestdata/NLTK_English_Stopwords_Corpus.txt"
+  val DEFAULT_TEST_DATA_PATH = "hdfs:///data"
+  val DEFAULT_PROCESSED_TWEETS_PATH = "hdfs:///processed_data"
+
   private val props = new Properties()
   props.load(new FileInputStream("application.conf"))
-//  val masterURL =
-  val SENTIMENT140_TRAIN_DATA_PATH = props.getProperty("SENTIMENT140_TRAIN_DATA_PATH")
-  val SENTIMENT140_TEST_DATA_PATH = props.getProperty("SENTIMENT140_TEST_DATA_PATH")
-  val MODEL_PATH = props.getProperty("MODEL_PATH")
-  val NLTK_STOPWORDS_PATH = props.getProperty("NLTK_STOPWORDS_PATH")
-  val TEST_DATA_PATH = props.getProperty("TEST_DATA_PATH")
+
+  val SENTIMENT140_TRAIN_DATA_PATH = props.getProperty("SENTIMENT140_TRAIN_DATA_PATH", DEFAULT_SENTIMENT140_TRAIN_DATA_PATH)
+  val SENTIMENT140_TEST_DATA_PATH = props.getProperty("SENTIMENT140_TEST_DATA_PATH", DEFAULT_SENTIMENT140_TEST_DATA_PATH)
+  val MODEL_PATH = props.getProperty("MODEL_PATH", DEFAULT_MODEL_PATH)
+  val NLTK_STOPWORDS_PATH = props.getProperty("NLTK_STOPWORDS_PATH", DEFAULT_NLTK_STOPWORDS_PATH)
+  val TEST_DATA_PATH = props.getProperty("TEST_DATA_PATH", DEFAULT_TEST_DATA_PATH)
+  val PROCESSED_TWEETS_PATH = props.getProperty("PROCESSED_TWEETS_PATH", DEFAULT_PROCESSED_TWEETS_PATH)
 }
