@@ -9,6 +9,8 @@ import org.apache.spark.sql.SparkSession
 import org.elasticsearch.spark._
 import org.elasticsearch.spark.rdd.EsSpark
 
+import scala.util.Try
+
 object ProcessData {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder
@@ -86,7 +88,7 @@ object ProcessData {
 //        println("genre: " + genre.getName)
         LogUtil.info("\n\n\t[=============> " + city.getName + "(" + cityCount + "/" + cities.length + ")" + " - " + genre.getName +  "(" + genreCount + "/" + genres.length + ") <==============]\n")
         val genreName = genre.getName
-        val movies = sc.wholeTextFiles(genre.toString, 8) //.coalesce(20)
+        val movies = sc.wholeTextFiles(genre.toString, 20) // 8
         val cleanedMovies = movies.filter(
           x => {
             val pathSplits = x._1.split("/")
@@ -95,41 +97,48 @@ object ProcessData {
             splits.length == 3
           }
         )
-        val moviesTweets = cleanedMovies.flatMap {
+        val moviesTweets = movies.flatMap {
           case (pathName:String, tweets:String) => {
-            val pathSplits = pathName.split("/")
-            val fileName = pathSplits(pathSplits.length - 1)
-            val splits = fileName.split('-')
-            val movieName = splits(0).substring(0, splits(0).length - "near".length).replaceAll("_", " ").trim.replaceAll("#", " ").trim
-            tweets.split("\n").map(
-              t => {
-                try {
-                  implicit val formats = DefaultFormats
-                  val text: String = (parse(t) \ "text").extract[String]
-                  val time: String = (parse(t) \ "datetime").extract[String]
+            try {
+              val pathSplits = pathName.split("/")
+              val fileName = pathSplits(pathSplits.length - 1)
+              val splits = fileName.split('-')
+              val movieName = splits(0).substring(0, splits(0).length - "near".length).replaceAll("_", " ").trim.replaceAll("#", " ").trim
+              tweets.split("\n").map(
+                t => {
+                  try {
+                    implicit val formats = DefaultFormats
+                    val text: String = (parse(t) \ "text").extract[String]
+                    val time: String = (parse(t) \ "datetime").extract[String]
 
-                  // ===
-                  val sentimentFLoat = SVMModelCreator.predict(model, text, stopWordsList)
-                  var sentiment = "pos"
-                  if (sentimentFLoat == 0.0) {
-                    sentiment = "neg"
+                    // ===
+                    val sentimentFLoat = SVMModelCreator.predict(model, text, stopWordsList)
+                    var sentiment = "pos"
+                    if (sentimentFLoat == 0.0) {
+                      sentiment = "neg"
+                    }
+                    // ===
+                    // case class TweetES(city_name:String, genre:String, movie_name:String, sentiment:String, location:String, time:String)
+                    TweetES(cityName, genreName, movieName, sentiment, Constants.geoMap(cityName.trim), time)
+                  } catch {
+                    case e:Exception =>
+                      LogUtil.warn("Exception when convert raw text: " + t + "\n\n Get exception: " + e.toString)
+                      None
                   }
-                  // ===
-                  // case class TweetES(city_name:String, genre:String, movie_name:String, sentiment:String, location:String, time:String)
-                  TweetES(cityName, genreName, movieName, sentiment, Constants.geoMap(cityName.trim), time)
-                } catch {
-                  case e:Exception =>
-                    LogUtil.warn("Exception when convert raw text: " + t)
                 }
-              }
-            )
+              )
+            } catch {
+              case e:Exception =>
+                LogUtil.warn("Exception : " + e.toString)
+                None
+            }
           }
         }
 //        println(moviesTweets.collect().toList.toString())
         val hdfsSavePath = PropertiesLoader.PROCESSED_TWEETS_PATH + "/" + cityName.replaceAll(" ", "_") + "-" + genre.getName.replaceAll(" ", "_") + ".data"
         SVMModelCreator.checkModelSavePath(sc, hdfsSavePath)
         LogUtil.info("\n\n\t ==>  Save data to path: " + hdfsSavePath + "\n")
-        moviesTweets.saveAsTextFile(hdfsSavePath)
+//        moviesTweets.saveAsTextFile(hdfsSavePath)
         EsSpark.saveToEs(moviesTweets, "tweets/tweet")
       }
     }
