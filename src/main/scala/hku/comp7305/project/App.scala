@@ -42,7 +42,7 @@ object App {
     }
 
     val spark = SparkSession.builder
-                    .appName("Twitter Movie Reviews Sentiment Analysis v0.3")
+                    .appName("Twitter Movie Reviews Sentiment Analysis")
                     .getOrCreate()
     val sc = spark.sparkContext
 //    println("PropertiesLoader.SPARK_LOG_LEVEL: " + PropertiesLoader.SPARK_LOG_LEVEL)

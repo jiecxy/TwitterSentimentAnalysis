@@ -14,7 +14,7 @@ import scala.util.Try
 object ProcessData {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder
-      .appName("Twitter Movie Reviews Sentiment Analysis v0.3 (Process Data)")
+      .appName("Twitter Movie Reviews Sentiment Analysis (Process Data)")
       .getOrCreate()
     val sc = spark.sparkContext
     LogUtil.info("Starting processing...")
@@ -119,7 +119,7 @@ object ProcessData {
                     }
                     // ===
                     // case class TweetES(city_name:String, genre:String, movie_name:String, sentiment:String, location:String, time:String)
-                    TweetES(cityName, genreName, movieName, sentiment, Constants.geoMap(cityName.trim), time)
+                    TweetES(cityName, genreName, movieName, sentiment, Constants.geoMap.getOrElse(cityName.trim, Constants.DEFAULT_GEO), time)
                   } catch {
                     case e:Exception =>
                       LogUtil.warn("Exception when convert raw text: " + t + "\n\n Get exception: " + e.toString)
@@ -135,9 +135,9 @@ object ProcessData {
           }
         }
 //        println(moviesTweets.collect().toList.toString())
-        val hdfsSavePath = PropertiesLoader.PROCESSED_TWEETS_PATH + "/" + cityName.replaceAll(" ", "_") + "-" + genre.getName.replaceAll(" ", "_") + ".data"
-        SVMModelCreator.checkModelSavePath(sc, hdfsSavePath)
-        LogUtil.info("\n\n\t ==>  Save data to path: " + hdfsSavePath + "\n")
+//        val hdfsSavePath = PropertiesLoader.PROCESSED_TWEETS_PATH + "/" + cityName.replaceAll(" ", "_") + "-" + genre.getName.replaceAll(" ", "_") + ".data"
+//        SVMModelCreator.checkModelSavePath(sc, hdfsSavePath)
+//        LogUtil.info("\n\n\t ==>  Save data to path: " + hdfsSavePath + "\n")
 //        moviesTweets.saveAsTextFile(hdfsSavePath)
         EsSpark.saveToEs(moviesTweets, "tweets/tweet")
       }

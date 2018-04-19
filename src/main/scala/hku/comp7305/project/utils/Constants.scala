@@ -7,6 +7,7 @@ cat map.txt | awk '{if(NF==3) {print "geoMap += (\""$1" "$2"\" -> \""$NF"\")"} e
  */
 
 object Constants {
+  val DEFAULT_GEO = "41.8781136000,-87.6297982000"
   var geoMap : Map[String, String] = Map()
   geoMap += ("New York" -> "40.7127753000,-74.0059728000")
   geoMap += ("Los Angeles" -> "34.0522342000,-118.2436849000")
