@@ -15,6 +15,7 @@ object ProcessData {
   def main(args: Array[String]): Unit = {
 
     println("\nConfiguration:" + "\n" +
+      "\t" + "MODEL_PATH = " + PropertiesLoader.MODEL_PATH + "\n" +
       "\t" + "TEST_DATA_PATH = " + PropertiesLoader.TEST_DATA_PATH + "\n" +
       "\t" + "MIN_PARTITIONS = " + PropertiesLoader.MIN_PARTITIONS + "\n" +
       "\t" + "ES_RESOURCE = " + PropertiesLoader.ES_RESOURCE + "\n")
