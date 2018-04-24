@@ -51,6 +51,22 @@
           <artifactId>spark-mllib_2.11</artifactId>
           <version>${spark.version}</version>
       </dependency>
+      <dependency>
+          <groupId>org.deeplearning4j</groupId>
+          <artifactId>dl4j-spark_2.11</artifactId>
+          <version>1.0.0-alpha_spark_2</version>
+      </dependency>
+      <dependency>
+          <groupId>org.deeplearning4j</groupId>
+          <artifactId>dl4j-spark-nlp_2.11</artifactId>
+          <version>1.0.0-alpha_spark_2</version>
+      </dependency>
+      <dependency>
+          <groupId>org.nd4j</groupId>
+          <artifactId>nd4j-native</artifactId>
+          <version>1.0.0-alpha</version>
+          <scope>test</scope>
+      </dependency>
   </dependencies>
 
     <build>
@@ -107,6 +123,27 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-dependency-plugin</artifactId>-->
+                <!--<version>3.0.1</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>copy-dependencies</id>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>copy-dependencies</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<outputDirectory>target/lib</outputDirectory>-->
+                            <!--<excludeArtifactIds>-->
+                                <!--spark-mllib_2.11,spark-sql_2.11,scala-library-->
+                            <!--</excludeArtifactIds>-->
+                            <!--<overWriteSnapshots>true</overWriteSnapshots>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 </project>

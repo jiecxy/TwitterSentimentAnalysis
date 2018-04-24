@@ -36,7 +36,6 @@ object SVMModelCreator {
     labeledRDD.cache()
     LogUtil.info("Starting training SVM model...")
     val model = SVMWithSGD.train(labeledRDD, iterations)
-    //TODO
     LogUtil.info("Training SVM model finished!")
     LogUtil.info("Saving SVM model...")
     checkModelSavePath(sc, PropertiesLoader.MODEL_PATH)
@@ -125,8 +124,6 @@ object SVMModelCreator {
   }
 
   def loadStopWords(sc: SparkContext, stopWordsFileName: String): List[String] = {
-    //    Source.fromInputStream(getClass.getResourceAsStream(stopWordsFileName)).getLines().toList
-    //    Source.fromInputStream(new FileInputStream(stopWordsFileName)).getLines().toList
     sc.textFile(stopWordsFileName).collect().toList
   }
 }

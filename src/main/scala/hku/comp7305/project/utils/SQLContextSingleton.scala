@@ -3,7 +3,7 @@ package hku.comp7305.project.utils
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{SQLContext, SparkSession}
 
-object SQLContextSingleton {
+object SQLContextSingleton extends java.io.Serializable {
 
   @transient
   @volatile private var instance: SQLContext = _

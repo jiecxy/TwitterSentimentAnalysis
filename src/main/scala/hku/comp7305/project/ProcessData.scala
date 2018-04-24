@@ -6,10 +6,8 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
-import org.elasticsearch.spark._
 import org.elasticsearch.spark.rdd.EsSpark
 
-import scala.util.Try
 
 object ProcessData {
   def main(args: Array[String]): Unit = {
@@ -18,6 +16,10 @@ object ProcessData {
       .getOrCreate()
     val sc = spark.sparkContext
     LogUtil.info("Starting processing...")
+    LogUtil.info("\nConfiguration:" +
+      "\t" + "TEST_DATA_PATH: " + PropertiesLoader.TEST_DATA_PATH +
+      "\t" + "MIN_PARTITIONS: " + PropertiesLoader.MIN_PARTITIONS +
+      "\t" + "PROCESSED_TWEETS_PATH: " + PropertiesLoader.PROCESSED_TWEETS_PATH + "\n")
     val stopWordsList = sc.broadcast(loadStopWords(sc, PropertiesLoader.NLTK_STOPWORDS_PATH))
     processBySVM(sc, stopWordsList)
     LogUtil.info("Finished processing...")
@@ -36,47 +38,13 @@ object ProcessData {
     import org.json4s._
     import org.json4s.jackson.JsonMethods._
 
-    //    case class Tweet(nbr_retweet:Int,
-    //                      nbr_favorite:Int,
-    //                      user_id:String,
-    //                      url:String,
-    //                      text:String,
-    //                      usernameTweet:String,
-    //                      datetime:String,
-    //                      is_retweet:Boolean,
-    //                      ID:String,
-    //                      nbr_reply:Int,
-    //                      is_reply:Boolean
-    //    )
-    //
-    //    case class Tweet(text:String)
-    //
-    //    implicit val formats = Serialization.formats(NoTypeHints)
-    //    val str = """{"nbr_retweet": 0,"nbr_favorite": 0,"user_id": "3247178202","url": "/MoAMPmusic/status/980664030061834240","text": "Everyone Wants to be a Lion. \nChances are most don't get the opportunity to be. \n#zoology","usernameTweet": "MoAMPmusic","datetime": "2018-04-02 12:31:39","is_retweet": false,"ID": "980664030061834240","nbr_reply": 0,"is_reply": false},"""
-    //    val tweetObj = parse(str).extract[Tweet]
-    //    parse(str).values
-
-    /*
-    {"nbr_retweet": 0,
-    "nbr_favorite": 0,
-    "user_id": "3247178202",
-    "url": "/MoAMPmusic/status/980664030061834240",
-    "text": "Everyone Wants to be a Lion. \nChances are most don't get the opportunity to be. \n#zoology",
-    "usernameTweet": "MoAMPmusic",
-    "datetime": "2018-04-02 12:31:39",
-    "is_retweet": false,
-    "ID": "980664030061834240",
-    "nbr_reply": 0,
-    "is_reply": false},
-     */
-    case class TweetES(city_name:String, genre:String, movie_name:String, sentiment:String, location:String, time:String)
+    case class TweetES(city:String, genre:String, movie:String, sentiment:String, location:String, time:String)
     val model = SVMModelCreator.loadModel(sc)
 
     val cityPath = hdfs.listStatus(path)
     val cities = FileUtil.stat2Paths(cityPath)
     var cityCount = 0
     for (city <- cities) {
-//      println("city: " + city.getName)
       cityCount += 1
       val cityName = city.getName
       val genrePath = hdfs.listStatus(city)
@@ -85,10 +53,9 @@ object ProcessData {
       var genreCount = 0
       for (genre <- genres) {
         genreCount += 1
-//        println("genre: " + genre.getName)
         LogUtil.info("\n\n\t[=============> " + city.getName + "(" + cityCount + "/" + cities.length + ")" + " - " + genre.getName +  "(" + genreCount + "/" + genres.length + ") <==============]\n")
         val genreName = genre.getName
-        val movies = sc.wholeTextFiles(genre.toString, 20) // 8
+        val movies = sc.wholeTextFiles(genre.toString, PropertiesLoader.MIN_PARTITIONS.toInt) // 20
         val cleanedMovies = movies.filter(
           x => {
             val pathSplits = x._1.split("/")
