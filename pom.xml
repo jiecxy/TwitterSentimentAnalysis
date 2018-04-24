@@ -51,22 +51,6 @@
           <artifactId>spark-mllib_2.11</artifactId>
           <version>${spark.version}</version>
       </dependency>
-      <dependency>
-          <groupId>org.deeplearning4j</groupId>
-          <artifactId>dl4j-spark_2.11</artifactId>
-          <version>1.0.0-alpha_spark_2</version>
-      </dependency>
-      <dependency>
-          <groupId>org.deeplearning4j</groupId>
-          <artifactId>dl4j-spark-nlp_2.11</artifactId>
-          <version>1.0.0-alpha_spark_2</version>
-      </dependency>
-      <dependency>
-          <groupId>org.nd4j</groupId>
-          <artifactId>nd4j-native</artifactId>
-          <version>1.0.0-alpha</version>
-          <scope>test</scope>
-      </dependency>
   </dependencies>
 
     <build>

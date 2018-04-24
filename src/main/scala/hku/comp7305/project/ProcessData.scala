@@ -8,18 +8,21 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
 import org.elasticsearch.spark.rdd.EsSpark
 
-
+/**
+  * java -cp target/TwitterSentimentAnalysis-1.0.jar hku.comp7305.project.ProcessData
+  */
 object ProcessData {
   def main(args: Array[String]): Unit = {
+
     val spark = SparkSession.builder
       .appName("Twitter Movie Reviews Sentiment Analysis (Process Data)")
       .getOrCreate()
     val sc = spark.sparkContext
     LogUtil.info("Starting processing...")
-    LogUtil.info("\nConfiguration:" +
-      "\t" + "TEST_DATA_PATH: " + PropertiesLoader.TEST_DATA_PATH +
-      "\t" + "MIN_PARTITIONS: " + PropertiesLoader.MIN_PARTITIONS +
-      "\t" + "PROCESSED_TWEETS_PATH: " + PropertiesLoader.PROCESSED_TWEETS_PATH + "\n")
+    LogUtil.info("\nConfiguration:" + "\n" +
+      "\t" + "TEST_DATA_PATH = " + PropertiesLoader.TEST_DATA_PATH + "\n" +
+      "\t" + "MIN_PARTITIONS = " + PropertiesLoader.MIN_PARTITIONS + "\n" +
+      "\t" + "ES_RESOURCE = " + PropertiesLoader.ES_RESOURCE + "\n")
     val stopWordsList = sc.broadcast(loadStopWords(sc, PropertiesLoader.NLTK_STOPWORDS_PATH))
     processBySVM(sc, stopWordsList)
     LogUtil.info("Finished processing...")
@@ -101,12 +104,7 @@ object ProcessData {
             }
           }
         }
-//        println(moviesTweets.collect().toList.toString())
-//        val hdfsSavePath = PropertiesLoader.PROCESSED_TWEETS_PATH + "/" + cityName.replaceAll(" ", "_") + "-" + genre.getName.replaceAll(" ", "_") + ".data"
-//        SVMModelCreator.checkModelSavePath(sc, hdfsSavePath)
-//        LogUtil.info("\n\n\t ==>  Save data to path: " + hdfsSavePath + "\n")
-//        moviesTweets.saveAsTextFile(hdfsSavePath)
-        EsSpark.saveToEs(moviesTweets, "tweets/tweet")
+        EsSpark.saveToEs(moviesTweets, PropertiesLoader.ES_RESOURCE)
       }
     }
   }
