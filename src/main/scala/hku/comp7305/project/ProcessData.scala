@@ -90,7 +90,6 @@ object ProcessData {
                       sentiment = "neg"
                     }
                     // ===
-                    // case class TweetES(city_name:String, genre:String, movie_name:String, sentiment:String, location:String, time:String)
                     TweetES(cityName, genreName, movieName, sentiment, Constants.geoMap.getOrElse(cityName.trim, Constants.DEFAULT_GEO), time)
                   } catch {
                     case e:Exception =>
