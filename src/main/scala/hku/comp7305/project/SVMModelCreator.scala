@@ -84,7 +84,6 @@ object SVMModelCreator {
     val predictedInCorrect = actualVsPredictionRDD.filter(x => x._1 != x._2).count()
     val accuracy = 100.0 * predictedCorrect.toDouble / (predictedCorrect + predictedInCorrect).toDouble
     println(f"""\n\t<==******** Prediction accuracy compared to actual: $accuracy%.2f%% ********==>\n""")
-    //    saveAccuracy(sc, actualVsPredictionRDD)
   }
 
   def loadSentiment140File(sc: SparkContext, sentiment140FilePath: String): DataFrame = {

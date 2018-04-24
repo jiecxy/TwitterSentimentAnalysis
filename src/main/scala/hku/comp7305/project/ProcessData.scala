@@ -14,15 +14,16 @@ import org.elasticsearch.spark.rdd.EsSpark
 object ProcessData {
   def main(args: Array[String]): Unit = {
 
+    println("\nConfiguration:" + "\n" +
+      "\t" + "TEST_DATA_PATH = " + PropertiesLoader.TEST_DATA_PATH + "\n" +
+      "\t" + "MIN_PARTITIONS = " + PropertiesLoader.MIN_PARTITIONS + "\n" +
+      "\t" + "ES_RESOURCE = " + PropertiesLoader.ES_RESOURCE + "\n")
+
     val spark = SparkSession.builder
       .appName("Twitter Movie Reviews Sentiment Analysis (Process Data)")
       .getOrCreate()
     val sc = spark.sparkContext
     LogUtil.info("Starting processing...")
-    LogUtil.info("\nConfiguration:" + "\n" +
-      "\t" + "TEST_DATA_PATH = " + PropertiesLoader.TEST_DATA_PATH + "\n" +
-      "\t" + "MIN_PARTITIONS = " + PropertiesLoader.MIN_PARTITIONS + "\n" +
-      "\t" + "ES_RESOURCE = " + PropertiesLoader.ES_RESOURCE + "\n")
     val stopWordsList = sc.broadcast(loadStopWords(sc, PropertiesLoader.NLTK_STOPWORDS_PATH))
     processBySVM(sc, stopWordsList)
     LogUtil.info("Finished processing...")
@@ -58,7 +59,7 @@ object ProcessData {
         genreCount += 1
         LogUtil.info("\n\n\t[=============> " + city.getName + "(" + cityCount + "/" + cities.length + ")" + " - " + genre.getName +  "(" + genreCount + "/" + genres.length + ") <==============]\n")
         val genreName = genre.getName
-        val movies = sc.wholeTextFiles(genre.toString, PropertiesLoader.MIN_PARTITIONS.toInt) // 20
+        val movies = sc.wholeTextFiles(genre.toString, PropertiesLoader.MIN_PARTITIONS) // 20
         val cleanedMovies = movies.filter(
           x => {
             val pathSplits = x._1.split("/")
@@ -106,22 +107,6 @@ object ProcessData {
         }
         EsSpark.saveToEs(moviesTweets, PropertiesLoader.ES_RESOURCE)
       }
-    }
-  }
-
-  def extractInfoFromFileName(path: String): String = {
-    //     hdfs://student10:9000/test/Chicago/drama/#Zoology_near-"Chicago"_since-2016
-    //    val fileName = new Path(path).getName
-    val pathSplits = path.split("/")
-    val fileName = pathSplits(pathSplits.length - 1)
-    val splits = fileName.split('-')
-    if (splits.length != 3) {
-      println("ERROR: invalid file " + fileName)
-      null
-    } else {
-      val movieName = splits(0).substring(0, splits(0).length - "near".length).replaceAll("_", " ").trim.replaceAll("#", " ").trim
-      //      val sinceYear = splits(2).toInt
-      movieName
     }
   }
 }
