@@ -43,7 +43,7 @@ object ProcessData {
     import org.json4s._
     import org.json4s.jackson.JsonMethods._
 
-    case class TweetES(city:String, genre:String, movie:String, sentiment:String, location:String, time:String)
+    case class TweetES(cityname:String, genre:String, moviename:String, sentiment:String, location:String, time:String)
     val model = SVMModelCreator.loadModel(sc)
 
     val cityPath = hdfs.listStatus(path)
