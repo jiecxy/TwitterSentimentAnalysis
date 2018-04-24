@@ -13,14 +13,6 @@ import org.apache.spark.sql.{DataFrame, Row}
 object SVMModelCreator {
 
   def main(args: Array[String]): Unit = {
-    //    val spark = SparkSession.builder
-    //      .appName("Simple Application")
-    //      .master("local")
-    //      .getOrCreate()
-    //    val sc = spark.sparkContext
-    //    val stopWordsList = sc.broadcast(loadStopWords(spark.sparkContext, PropertiesLoader.NLTK_STOPWORDS_PATH))
-    //    createAndSaveModel(sc, stopWordsList)
-    //    validateAccuracyOfModel(sc, stopWordsList)
   }
 
   val hashingTF = new HashingTF()
@@ -78,7 +70,6 @@ object SVMModelCreator {
           tweetText)
     }
     actualVsPredictionRDD.cache()
-    //    val accuracy = 100.0 * actualVsPredictionRDD.filter(x => x._1 == x._2).count() / tweetsDF.count()
 
     val predictedCorrect = actualVsPredictionRDD.filter(x => x._1 == x._2).count()
     val predictedInCorrect = actualVsPredictionRDD.filter(x => x._1 != x._2).count()

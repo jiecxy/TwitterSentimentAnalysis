@@ -60,7 +60,7 @@ object ProcessData {
         genreCount += 1
         LogUtil.info("\n\n\t[=============> " + city.getName + "(" + cityCount + "/" + cities.length + ")" + " - " + genre.getName +  "(" + genreCount + "/" + genres.length + ") <==============]\n")
         val genreName = genre.getName
-        val movies = sc.wholeTextFiles(genre.toString, PropertiesLoader.MIN_PARTITIONS) // 20
+        val movies = sc.wholeTextFiles(genre.toString, PropertiesLoader.MIN_PARTITIONS)
         val cleanedMovies = movies.filter(
           x => {
             val pathSplits = x._1.split("/")
@@ -82,14 +82,11 @@ object ProcessData {
                     implicit val formats = DefaultFormats
                     val text: String = (parse(t) \ "text").extract[String]
                     val time: String = (parse(t) \ "datetime").extract[String]
-
-                    // ===
-                    val sentimentFLoat = SVMModelCreator.predict(model, text, stopWordsList)
+                    val sentimentFloat = SVMModelCreator.predict(model, text, stopWordsList)
                     var sentiment = "pos"
-                    if (sentimentFLoat == 0.0) {
+                    if (sentimentFloat == 0.0) {
                       sentiment = "neg"
                     }
-                    // ===
                     TweetES(cityName, genreName, movieName, sentiment, Constants.geoMap.getOrElse(cityName.trim, Constants.DEFAULT_GEO), time)
                   } catch {
                     case e:Exception =>

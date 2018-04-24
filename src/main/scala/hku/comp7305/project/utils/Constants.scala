@@ -1,6 +1,5 @@
 package hku.comp7305.project.utils
 
-import scala.collection.mutable
 
 /*
 cat map.txt | awk '{if(NF==3) {print "geoMap += (\""$1" "$2"\" -> \""$NF"\")"} else {print "geoMap += (\""$1"\" -> \""$NF"\")"}}'

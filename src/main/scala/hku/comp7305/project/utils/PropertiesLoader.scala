@@ -12,7 +12,7 @@ object PropertiesLoader {
   val DEFAULT_MODEL_PATH = "hdfs:///tsa/model"
   val DEFAULT_NLTK_STOPWORDS_PATH = "hdfs:///tsa/trainingandtestdata/NLTK_English_Stopwords_Corpus.txt"
   val DEFAULT_TEST_DATA_PATH = "hdfs:///data"
-  val DEFAULT_MODEL_ITERATION_NUM = "2000"
+  val DEFAULT_MODEL_ITERATION_NUM = "200"
   val DEFAULT_MIN_PARTITIONS = "30"
   val DEFAULT_ES_RESOURCE = "tweets/tweet"
 
@@ -35,3 +35,4 @@ object PropertiesLoader {
   val TEST_DATA_PATH = props.getProperty("TEST_DATA_PATH", DEFAULT_TEST_DATA_PATH).trim
   val ES_RESOURCE = props.getProperty("ES_RESOURCE", DEFAULT_ES_RESOURCE).trim
 }
+
