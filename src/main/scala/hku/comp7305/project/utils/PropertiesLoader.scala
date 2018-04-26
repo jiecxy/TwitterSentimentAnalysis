@@ -11,6 +11,7 @@ object PropertiesLoader {
   val DEFAULT_SENTIMENT140_TEST_DATA_PATH = "hdfs:///tsa/trainingandtestdata/testdata.manual.2009.06.14.csv"
   val DEFAULT_MODEL_PATH = "hdfs:///tsa/model"
   val DEFAULT_NLTK_STOPWORDS_PATH = "hdfs:///tsa/trainingandtestdata/NLTK_English_Stopwords_Corpus.txt"
+  val DEFAULT_CITY_GEO_MAP_PATH = "hdfs:///tsa/cityGeoMap.txt"
   val DEFAULT_TEST_DATA_PATH = "hdfs:///data"
   val DEFAULT_MODEL_ITERATION_NUM = "200"
   val DEFAULT_MIN_PARTITIONS = "30"
@@ -32,6 +33,7 @@ object PropertiesLoader {
   val MODEL_ITERATION_NUM = Integer.parseInt(props.getProperty("MODEL_ITERATION_NUM", DEFAULT_MODEL_ITERATION_NUM).trim)
   val MIN_PARTITIONS = Integer.parseInt(props.getProperty("MIN_PARTITIONS", DEFAULT_MIN_PARTITIONS).trim)
   val NLTK_STOPWORDS_PATH = props.getProperty("NLTK_STOPWORDS_PATH", DEFAULT_NLTK_STOPWORDS_PATH).trim
+  val CITY_GEO_MAP_PATH = props.getProperty("CITY_GEO_MAP_PATH", DEFAULT_CITY_GEO_MAP_PATH).trim
   val TEST_DATA_PATH = props.getProperty("TEST_DATA_PATH", DEFAULT_TEST_DATA_PATH).trim
   val ES_RESOURCE = props.getProperty("ES_RESOURCE", DEFAULT_ES_RESOURCE).trim
 }
