@@ -46,3 +46,5 @@ original-TwitterSentimentAnalysis-1.0.jar
 --num-executors 11 \
 original-TwitterSentimentAnalysis-1.0.jar
 ```
+
+Note: "application.conf" is configuration file.
